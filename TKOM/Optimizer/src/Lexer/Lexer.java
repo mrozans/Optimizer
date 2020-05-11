@@ -1,4 +1,4 @@
-package lexer;
+package Lexer;
 
 import FileHandler.FileHandler;
 import java.io.IOException;
@@ -87,7 +87,7 @@ public class Lexer {
         }
         else if(sign == '|'){
             sign = fileHandler.peak();
-            if(sign == '=') {
+            if(sign == '|') {
                 token.setType(Token.TokenType.Or);
                 fileHandler.skip();
             }
@@ -95,14 +95,13 @@ public class Lexer {
         }
         else if(sign == '&'){
             sign = fileHandler.peak();
-            if(sign == '=') {
+            if(sign == '&') {
                 token.setType(Token.TokenType.And);
                 fileHandler.skip();
             }
             else token.setType(Token.TokenType.Unknown);
         }
         else {
-
             token.setType(Symbols.signs.get(sign));
             if(token.getType() == null) token.setType(Token.TokenType.Unknown);
         }
