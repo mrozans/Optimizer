@@ -47,7 +47,8 @@ public class Node {
         if(type != null) tmp.append(type);
         else if(tokenType != null) tmp.append(tokenType);
         else tmp.append("root");
-        if(value != null) tmp.append("- ").append(value);
+        if(value != null) tmp.append(": ").append(value);
+        System.out.println(tmp);
         for (Node childNode : childNodes) {
             childNode.printNode();
         }
