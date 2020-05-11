@@ -1,6 +1,14 @@
-int main(){
-    for(i=1; i <= 10; i = i +1) {
-        float a = 1.1;
+int main()
+{
+    int i, j = 7, a=5;
+    float tab[3] = {3, 6/2, 87}, x = 7.5, y;
+    for (i=1; i<100; i= i + 1)
+    {
+        a = a + 1;
+        for (j=1; j<100; j = j + 1)
+        {
+            b[i] = c[j] * a *4;
+        }
     }
     return 0;
 }

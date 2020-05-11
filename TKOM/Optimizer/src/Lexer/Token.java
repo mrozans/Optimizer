@@ -1,14 +1,14 @@
-package lexer;
+package Lexer;
 
 public class Token {
 
-    public TokenType type;
+    private TokenType type;
     private int line;
     private int position;
     private String value;
 
     Token(int line, int position) {
-        this.line = line;
+        this.line = line + 1;
         this.position = position;
     }
 
@@ -16,12 +16,24 @@ public class Token {
         this.type = type;
     }
 
-    TokenType getType(){
+    public TokenType getType(){
         return type;
     }
 
     void setValue(String value) {
         this.value = value;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public int getLine() {
+        return line;
+    }
+
+    public int getPosition() {
+        return position;
     }
 
     public enum TokenType{

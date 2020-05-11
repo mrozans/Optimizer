@@ -1,5 +1,5 @@
-import lexer.Lexer;
-import lexer.Token;
+import Lexer.Lexer;
+import Lexer.Token;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -11,7 +11,7 @@ public class LexerTest {
         Token token;
         do {
             token = lexer.nextToken();
-            System.out.println(token.type);
-        }while (token.type != Token.TokenType.EOF);
+            System.out.println(token.getType());
+        }while (token.getType() != Token.TokenType.EOF);
     }
 }
