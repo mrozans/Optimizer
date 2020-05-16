@@ -11,6 +11,8 @@ public class Node {
     private Node parentNode;
     private String type;
     private static int level = 0;
+    private ArrayList<Integer> blocks;
+    private int line;
 
     Node() {
         tokenType = null;
@@ -18,6 +20,8 @@ public class Node {
         parentNode = null;
         childNodes = new ArrayList<Node>();
         type = null;
+        blocks = new ArrayList<>();
+        line = 0;
     }
 
     Node(Node parentNode, Token token){
@@ -26,6 +30,8 @@ public class Node {
         parentNode.childNodes.add(this);
         tokenType = token.getType();
         value = token.getValue();
+        blocks = new ArrayList<>();
+        line = token.getLine();
     }
 
     Node(Node parentNode, String type){
@@ -33,11 +39,25 @@ public class Node {
         childNodes = new ArrayList<Node>();
         parentNode.childNodes.add(this);
         this.type = type;
+        blocks = new ArrayList<>();
     }
 
-    Node nextNode(){
+    Node newestNode(){
         if(childNodes.size() == 0) return this;
         return childNodes.get(childNodes.size()-1);
+    }
+
+    public Node nextNode(){
+        if(childNodes.size() != 0) return childNodes.get(0);
+        Node currentNode = this;
+        while(true){
+            Node tmp = currentNode;
+            currentNode = currentNode.getParentNode();
+            if(currentNode == null) return null;
+            for(int i = 0; i < currentNode.childNodes.size() - 1; i++){
+                if(currentNode.childNodes.get(i) == tmp) return currentNode.childNodes.get(i+1);
+            }
+        }
     }
 
     void printNode(){
@@ -55,6 +75,18 @@ public class Node {
         level--;
     }
 
+    public ArrayList<Integer> getBlocks() {
+        return blocks;
+    }
+
+    public void setBlocks(ArrayList<Integer> blocks) {
+        this.blocks = blocks;
+    }
+
+    public String getType() {
+        return type;
+    }
+
     public Token.TokenType getTokenType() {
         return tokenType;
     }
@@ -67,7 +99,11 @@ public class Node {
         return childNodes;
     }
 
-    Node getParentNode() {
+    public Node getParentNode() {
         return parentNode;
+    }
+
+    public int getLine() {
+        return line;
     }
 }

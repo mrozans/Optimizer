@@ -13,7 +13,7 @@ public class SyntaxTree {
         root.printNode();
     }
 
-    Node getRoot() {
+    public Node getRoot() {
         return root;
     }
 
