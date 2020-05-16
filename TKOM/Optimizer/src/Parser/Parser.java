@@ -35,7 +35,7 @@ public class Parser {
 
     public SyntaxTree parseProgram(){
         accept(lexer.nextToken(), Int);
-        currentNode = currentNode.nextNode();
+        currentNode = currentNode.newestNode();
         accept(lexer.nextToken(), Main);
         currentNode = currentNode.getParentNode();
         accept(lexer.nextToken(), OpenBrace);
@@ -58,8 +58,7 @@ public class Parser {
                 case If:
                     parseIf();
                     break;
-                case Int:
-                case Short:
+                case Int: case Short:
                 case Long:
                 case Float:
                 case Double:
@@ -67,19 +66,17 @@ public class Parser {
                     parseInit();
                     break;
                 case Identifier:
-                    parseAssign();
-                    if(bufferedToken == null) bufferedToken = lexer.nextToken();
-                    accept(bufferedToken, Semicolon);
+                    parseIdentifier();
                     break;
                 default:
-                    parserError(bufferedToken, " start of statement");
+                    parserError(bufferedToken, " start of statement", null, 1);
                     break;
             }
             if(bufferedToken == null) bufferedToken = lexer.nextToken();
         }
         if(bufferedToken.getType() == EOF) return;
         addToTree(bufferedToken);
-        currentNode = currentNode.nextNode();
+        currentNode = currentNode.newestNode();
         accept(lexer.nextToken(), Number);
         accept(lexer.nextToken(), Semicolon);
     }
@@ -107,16 +104,14 @@ public class Parser {
                     parseInit();
                     break;
                 case Identifier:
-                    parseAssign();
-                    if(bufferedToken == null) bufferedToken = lexer.nextToken();
-                    accept(bufferedToken, Semicolon);
+                    parseIdentifier();
                     break;
                 case Continue:
                 case Break:
                     parseLoopExpression();
                     break;
                 default:
-                    parserError(bufferedToken, " start of statement");
+                    parserError(bufferedToken, " start of statement", null, 1);
                     break;
             }
             if(bufferedToken == null) bufferedToken = lexer.nextToken();
@@ -129,10 +124,26 @@ public class Parser {
         inFor++;
         addToTree(bufferedToken);
         Node parent = currentNode;
-        currentNode = currentNode.nextNode();
+        currentNode = currentNode.newestNode();
         accept(lexer.nextToken(), OpenBrace);
         inForBrace = true;
+        parseForBrace();
+        inForBrace = false;
+        parseBlock();
+        currentNode = parent;
+        inFor--;
+    }
+
+    private void parseForBrace(){
         bufferedToken = lexer.nextToken();
+        parseForStartStatement();
+        if(bufferedToken == null) bufferedToken = lexer.nextToken();
+        parseForCondition();
+        if(bufferedToken == null) bufferedToken = lexer.nextToken();
+        parseForPostStatement();
+    }
+
+    private void parseForStartStatement(){
         switch (bufferedToken.getType()){
             case Semicolon:
                 addToTree(bufferedToken);
@@ -145,8 +156,6 @@ public class Parser {
             case Bool:
                 currentNode = new Node(currentNode, " start statement ");
                 parseInit();
-                if(bufferedToken == null) bufferedToken = lexer.nextToken();
-                accept(bufferedToken, Semicolon);
                 currentNode = currentNode.getParentNode();
                 break;
             default:
@@ -157,7 +166,9 @@ public class Parser {
                 currentNode = currentNode.getParentNode();
                 break;
         }
-        if(bufferedToken == null) bufferedToken = lexer.nextToken();
+    }
+
+    private void parseForCondition(){
         if(bufferedToken.getType().equals(Semicolon)) addToTree(bufferedToken);
         else{
             currentNode = new Node(currentNode, " condition ");
@@ -166,7 +177,9 @@ public class Parser {
             accept(bufferedToken, Semicolon);
             currentNode = currentNode.getParentNode();
         }
-        if(bufferedToken == null) bufferedToken = lexer.nextToken();
+    }
+
+    private void parseForPostStatement(){
         if(bufferedToken.getType().equals(ClosedBrace)) addToTree(bufferedToken);
         else {
             currentNode = new Node(currentNode, " post statement ");
@@ -174,18 +187,13 @@ public class Parser {
             if(bufferedToken == null) bufferedToken = lexer.nextToken();
             accept(bufferedToken, ClosedBrace);
             currentNode = currentNode.getParentNode();
-            braceCount++;
         }
-        inForBrace = false;
-        parseBlock();
-        currentNode = parent;
-        inFor--;
     }
 
     private void parseIf(){
         addToTree(bufferedToken);
         Node parent = currentNode;
-        currentNode = currentNode.nextNode();
+        currentNode = currentNode.newestNode();
         inIf = true;
         parseMainExpression();
         inIf = false;
@@ -195,7 +203,7 @@ public class Parser {
         if(bufferedToken == null) bufferedToken = lexer.nextToken();
         if(bufferedToken.getType().equals(Else)) {
             addToTree(bufferedToken);
-            currentNode = currentNode.nextNode();
+            currentNode = currentNode.newestNode();
             if(bufferedToken.getType().equals(OpenCurlyBrace)) parseBlock();
             else parseIfExpression();
         }
@@ -205,8 +213,7 @@ public class Parser {
     private void parseInit(){
         addToTree(bufferedToken);
         Node parent = currentNode;
-        currentNode = currentNode.nextNode();
-        Node initType = currentNode;
+        currentNode = currentNode.newestNode();
         currentNode = new Node(currentNode, "variable initialization");
         parseVariable();
         if(bufferedToken == null) bufferedToken = lexer.nextToken();
@@ -238,7 +245,7 @@ public class Parser {
     private void parseAssign(){
         new Node(currentNode, "assign");
         Node parent = currentNode;
-        currentNode = currentNode.nextNode();
+        currentNode = currentNode.newestNode();
         if(bufferedToken == null) bufferedToken = lexer.nextToken();
         parseVariable();
         if(bufferedToken == null) bufferedToken = lexer.nextToken();
@@ -247,21 +254,27 @@ public class Parser {
         currentNode = parent;
     }
 
+    private void parseIdentifier(){
+        parseAssign();
+        if(bufferedToken == null) bufferedToken = lexer.nextToken();
+        accept(bufferedToken, Semicolon);
+    }
+
     private void parseMainExpression(){
         parseExpression();
-        if(braceCount != 0 && !(inForBrace && braceCount == -1)) braceError(bufferedToken);
+        if(braceCount != 0 && !(inForBrace && braceCount == -1)) parserError(bufferedToken, null, null, 1);
     }
 
     private void parseExpression(){
         new Node(currentNode, "expression");
         Node parent = currentNode;
-        currentNode = currentNode.nextNode();
+        currentNode = currentNode.newestNode();
         if(bufferedToken == null) bufferedToken = lexer.nextToken();
         parseExpressionValue();
-        currentNode = parent.nextNode();
+        currentNode = parent.newestNode();
         boolean end = false;
         if(bufferedToken == null) bufferedToken = lexer.nextToken();
-        while(syntaxTree.isValid() && !(inIf && braceCount == 0)
+        while(syntaxTree.isValid() && !(inIf && braceCount == 0) && !(inForBrace && braceCount == -1)
                 && !(bufferedToken.getType() == ClosedSquareBrace && inArray != 0)) {
             switch (bufferedToken.getType()){
                 case Plus:
@@ -294,7 +307,7 @@ public class Parser {
                     end = true;
                     break;
                 default:
-                    parserError(bufferedToken, " operator");
+                    parserError(bufferedToken, " operator", null, 1);
                     break;
             }
             if (!syntaxTree.isValid() || end) break;
@@ -303,7 +316,7 @@ public class Parser {
         }
         currentNode = parent;
         if(bufferedToken == null) bufferedToken = lexer.nextToken();
-        if(braceCount < 0 && !(inForBrace && braceCount == -1)) braceError(bufferedToken);
+        if(braceCount < 0 && !(inForBrace && braceCount == -1)) parserError(bufferedToken, null, null, 3);
         if(bufferedToken != null && !inForBrace && bufferedToken.getType() == ClosedBrace)  addToTree(bufferedToken);
     }
 
@@ -320,7 +333,7 @@ public class Parser {
                 parseLoopExpression();
                 break;
             default:
-                parserError(bufferedToken, " assign statement or instruction");
+                parserError(bufferedToken, " assign statement or instruction", null, 1);
                 break;
         }
     }
@@ -331,7 +344,7 @@ public class Parser {
             plusLast = false;
             minusLast = false;
             addToTree(bufferedToken);
-            currentNode = currentNode.nextNode();
+            currentNode = currentNode.newestNode();
             bufferedToken = lexer.nextToken();
         }
         if(bufferedToken.getType().equals(OpenBrace)){
@@ -343,8 +356,9 @@ public class Parser {
         }
         else parseValue();
         if(bufferedToken == null) bufferedToken = lexer.nextToken();
-        if(bufferedToken.getType().equals(ClosedBrace)){
+        if(bufferedToken.getType().equals(ClosedBrace) && !(braceCount == 0 && inForBrace)){
             braceCount--;
+            addToTree(bufferedToken);
         }
     }
 
@@ -352,7 +366,7 @@ public class Parser {
         if(bufferedToken == null) bufferedToken = lexer.nextToken();
         accept(bufferedToken, Identifier);
         Node parent = currentNode;
-        currentNode = currentNode.nextNode();
+        currentNode = currentNode.newestNode();
         bufferedToken = lexer.nextToken();
         if(bufferedToken.getType().equals(OpenSquareBrace)){
             addToTree(bufferedToken);
@@ -368,12 +382,17 @@ public class Parser {
         if(bufferedToken == null) bufferedToken = lexer.nextToken();
         Node parent = currentNode;
         if((bufferedToken.getType().equals(Plus) && plusLast) || (bufferedToken.getType().equals(Minus) && minusLast)) {
-            parserError(bufferedToken, " finite number or name of variable");
+            parserError(bufferedToken, " finite number or name of variable", null, 1);
         }
         else if(bufferedToken.getType().equals(Plus) || bufferedToken.getType().equals(Minus)){
             addToTree(bufferedToken);
-            currentNode = currentNode.nextNode();
+            currentNode = currentNode.newestNode();
             bufferedToken = lexer.nextToken();
+            if(bufferedToken.getType().equals(OpenBrace)){
+                parseExpression();
+                if(bufferedToken.getType().equals(OpenBrace)) accept(bufferedToken, ClosedBrace);
+                return;
+            }
         }
         if(bufferedToken == null) bufferedToken = lexer.nextToken();
         plusLast = false;
@@ -389,13 +408,13 @@ public class Parser {
                 parseVariable();
                 break;
             default:
-                parserError(bufferedToken, " finite number or name of variable");
+                parserError(bufferedToken, " finite number or name of variable", null, 1);
         }
         currentNode = parent;
     }
 
     private void parseLoopExpression(){
-        if(inFor <= 0) parserError(bufferedToken);
+        if(inFor <= 0) parserError(bufferedToken, null, null, 2);
         else
         {
             addToTree(bufferedToken);
@@ -427,34 +446,23 @@ public class Parser {
         if(nextToken.getType().equals(expectedToken)) {
             if(syntaxTree.isValid()) addToTree(nextToken);
         }
-        else if(syntaxTree.isValid()) parserError(nextToken, expectedToken);
+        else if(syntaxTree.isValid()) parserError(nextToken, null, expectedToken, 0);
     }
 
-    private void braceError(Token nextToken){
-        if(syntaxTree.isValid()) System.out.println("First detected error at line: " + nextToken.getLine() +
-            " Wrong number or placement of braces in expression"  + "\n");
+    private void parserError(Token token, String type, Token.TokenType expectedToken, int mode){
+        if(!syntaxTree.isValid()) return;
         syntaxTree.setValid(false);
-    }
-
-    private void parserError(Token token, Token.TokenType expectedToken) {
-        if(syntaxTree.isValid()) System.out.println("First detected error at line: " + token.getLine() + " position: " + token.getPosition() +
-                " got: " + token.getType() + " expected: " + expectedToken + "\n");
-        syntaxTree.setValid(false);
-        bufferedToken = null;
-    }
-
-    private void parserError(Token token, String type) {
-        if(syntaxTree.isValid()) System.out.println("First detected error at line: " + token.getLine() + " position: " + token.getPosition() +
-                " got: " + token.getType() + " expected: " + type + "\n");
-        syntaxTree.setValid(false);
-        bufferedToken = null;
-
-    }
-
-    private void parserError(Token token){
-        if(syntaxTree.isValid()) System.out.println("First detected error at line: " + token.getLine() + " position: " + token.getPosition() +
-                " use of: " + token.getType() + " forbidden outside of loop\n");
-        syntaxTree.setValid(false);
-        bufferedToken = null;
+        String tmp = "First detected error at line: " + token.getLine();
+        if(mode == 3) {
+            tmp+= " Wrong number or placement of braces in expression"  + "\n";
+        }
+        else{
+            tmp += " position: " + token.getPosition();
+            if(mode == 2) tmp+= " use of: " + token.getType() + " forbidden outside of loop\n";
+            else if(mode == 1) tmp+= " got: " + token.getType() + " expected: " + type + "\n";
+            else tmp+= " got: " + token.getType() + " expected: " + expectedToken + "\n";
+        }
+        System.out.println(tmp);
+        if(mode != 3)bufferedToken = null;
     }
 }
