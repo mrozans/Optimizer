@@ -10,7 +10,7 @@ public class Node {
     private ArrayList<Node> childNodes;
     private Node parentNode;
     private String type;
-    private static int level = 0;
+    private int level;
     private ArrayList<Integer> blocks;
     private int line;
 
@@ -60,10 +60,16 @@ public class Node {
         }
     }
 
+    public void calculateLevel(int level){
+        this.level = level;
+        for (Node childNode : childNodes) {
+            childNode.calculateLevel(level + 1);
+        }
+    }
+
     void printNode(){
-        level++;
         StringBuilder tmp = new StringBuilder();
-        tmp.append("\t".repeat(level - 1));
+        tmp.append("\t".repeat(level));
         if(type != null) tmp.append(type);
         else if(tokenType != null) tmp.append(tokenType);
         else tmp.append("root");
@@ -72,7 +78,6 @@ public class Node {
         for (Node childNode : childNodes) {
             childNode.printNode();
         }
-        level--;
     }
 
     public ArrayList<Integer> getBlocks() {
@@ -101,6 +106,10 @@ public class Node {
 
     public Node getParentNode() {
         return parentNode;
+    }
+
+    public int getLevel() {
+        return level;
     }
 
     public int getLine() {
