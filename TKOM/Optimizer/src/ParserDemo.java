@@ -1,3 +1,4 @@
+import CodeGenerator.CodeGenerator;
 import Lexer.Lexer;
 import Parser.Parser;
 import Parser.SyntaxTree;
@@ -11,9 +12,12 @@ public class ParserDemo {
         Lexer lexer = new Lexer(Path.of(args[0]));
         Parser parser = new Parser(lexer);
         SyntaxTree syntaxTree = parser.parseProgram();
+        syntaxTree.getRoot().calculateLevel(0);
         System.out.println(syntaxTree.isValid());
         if(syntaxTree.isValid()) syntaxTree.printTree();
         SemanticAnalyzer semantic_analyzer = new SemanticAnalyzer(syntaxTree);
         semantic_analyzer.analise();
+        CodeGenerator codeGenerator = new CodeGenerator(syntaxTree);
+        if(syntaxTree.isValid()) codeGenerator.generateCode();
     }
 }
