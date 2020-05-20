@@ -168,7 +168,7 @@ public class CodeGenerator {
         result.append(generateExpression());
         result.append(") ");
         if(currentNode.getType() != null){
-            if(currentNode.getType().equals("block")) result.append(generateBlock());
+            if(currentNode.getType().equals("block")) result.append("\n").append(generateBlock());
             else result.append(generateAssign()).append("\n");
         }
         else {
@@ -196,6 +196,9 @@ public class CodeGenerator {
         while(currentNode.getLevel() >= level){
             if(currentNode.getType() != null && currentNode.getType().equals("expression")){
                 int tmp = currentNode.getLevel();
+                if(currentNode.getParentNode().getTokenType() != null && (currentNode.getParentNode().getTokenType() == Token.TokenType.Negation))  tmp--;
+                if(currentNode.getParentNode().getTokenType() != null &&(currentNode.getParentNode().getTokenType() == Token.TokenType.Plus ||
+                        currentNode.getParentNode().getTokenType() == Token.TokenType.Minus)) tmp-=2;
                 result.append("(").append(generateExpression()).append(")");
                 level = tmp;
                 continue;
@@ -215,9 +218,6 @@ public class CodeGenerator {
                     break;
                 case Divide:
                     result.append(" / ");
-                    break;
-                case Modulo:
-                    result.append(" % ");
                     break;
                 case Or:
                     result.append(" || ");
@@ -245,6 +245,7 @@ public class CodeGenerator {
                     break;
                 case Negation:
                     result.append("!");
+                    break;
                 case Number:
                 case FiniteNumber:
                     result.append(currentNode.getValue());

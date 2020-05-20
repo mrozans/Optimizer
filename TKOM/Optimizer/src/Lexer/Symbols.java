@@ -31,7 +31,6 @@ class Symbols {
         signs.put('-', Token.TokenType.Minus);
         signs.put('*', Token.TokenType.Multiply);
         signs.put('/', Token.TokenType.Divide);
-        signs.put('%', Token.TokenType.Modulo);
         signs.put(';', Token.TokenType.Semicolon);
         signs.put(',', Token.TokenType.Comma);
     }

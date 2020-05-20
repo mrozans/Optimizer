@@ -39,7 +39,7 @@ public class Token {
     public enum TokenType{
         Main, For, Break, Continue, Return, EOF,
         Int, Short, Long, Float, Double, Bool,
-        Plus, Minus, Multiply, Divide, Modulo,
+        Plus, Minus, Multiply, Divide,
         If, Else, Or, And, Negation,
         Assign, Equal, NotEqual, Less, Greater, LessOrEqual, GreaterOrEqual,
         OpenBrace, ClosedBrace, OpenCurlyBrace, ClosedCurlyBrace, OpenSquareBrace, ClosedSquareBrace,

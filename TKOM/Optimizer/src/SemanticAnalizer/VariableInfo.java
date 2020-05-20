@@ -1,12 +1,14 @@
 package SemanticAnalizer;
 
-class Pair {
+class VariableInfo {
     private String variable;
     private boolean initialized;
+    private boolean array;
 
-    Pair(String variable) {
+    VariableInfo(String variable, boolean array) {
         this.variable = variable;
         initialized = false;
+        this.array = array;
     }
 
     String getVariable() {
@@ -19,5 +21,9 @@ class Pair {
 
     void setInitialized() {
         this.initialized = true;
+    }
+
+    boolean isArray() {
+        return array;
     }
 }

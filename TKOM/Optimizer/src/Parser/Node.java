@@ -12,6 +12,7 @@ public class Node {
     private String type;
     private int level;
     private ArrayList<Integer> blocks;
+    private ArrayList<Integer> forBlocks;
     private int line;
 
     Node() {
@@ -21,6 +22,7 @@ public class Node {
         childNodes = new ArrayList<Node>();
         type = null;
         blocks = new ArrayList<>();
+        forBlocks = new ArrayList<>();
         line = 0;
     }
 
@@ -34,11 +36,20 @@ public class Node {
         line = token.getLine();
     }
 
-    Node(Node parentNode, String type){
+    public Node(Node parentNode, String type){
         this.parentNode = parentNode;
         childNodes = new ArrayList<Node>();
-        parentNode.childNodes.add(this);
+        if(parentNode != null) parentNode.childNodes.add(this);
         this.type = type;
+        blocks = new ArrayList<>();
+    }
+
+    public Node(Node parentNode, Token.TokenType token, String value){
+        this.parentNode = parentNode;
+        childNodes = new ArrayList<Node>();
+        if(parentNode != null) parentNode.childNodes.add(this);
+        tokenType = token;
+        this.value = value;
         blocks = new ArrayList<>();
     }
 
@@ -100,6 +111,10 @@ public class Node {
         return value;
     }
 
+    public void setValue(String value) {
+        this.value = value;
+    }
+
     public ArrayList<Node> getChildNodes() {
         return childNodes;
     }
@@ -114,5 +129,36 @@ public class Node {
 
     public int getLine() {
         return line;
+    }
+
+    public ArrayList<Integer> getForBlocks() {
+        return forBlocks;
+    }
+
+    public void setForBlocks(ArrayList<Integer> forBlocks) {
+        this.forBlocks = forBlocks;
+    }
+
+    public void setParentNode(Node parentNode) {
+        this.parentNode = parentNode;
+    }
+
+    public void addFakeChild(Node child){
+        this.getChildNodes().add(child);
+    }
+
+    public void addNewChild(Node child){
+        if(child.getParentNode() != null){
+            int i = 0;
+            for (Node childNode : child.getParentNode().getChildNodes()) {
+                if(childNode == child) {
+                    child.getParentNode().getChildNodes().remove(i);
+                    break;
+                }
+                i++;
+            }
+        }
+        this.getChildNodes().add(child);
+        child.setParentNode(this);
     }
 }
