@@ -224,10 +224,15 @@ public class SemanticAnalyzer {
                     && currentNode.getChildNodes().size() != 0) {
                 for (ArrayList<VariableInfo> tmp : variables) {
                     for (VariableInfo variableInfo : tmp) {
-                        if(variableInfo.getVariable().equals(currentNode.getValue()) && !variableInfo.isArray())
+                        if(variableInfo.getVariable().equals(currentNode.getValue()) && !variableInfo.isArray()){
                             semanticAnalyzerError(currentNode.getValue(), currentNode.getLine(), 4);
+                            return;
+                        }
                     }
                 }
+                if(currentNode.getChildNodes().get(0).getChildNodes().get(0).getTokenType() != null &&
+                        currentNode.getChildNodes().get(0).getChildNodes().get(0).getTokenType() == Token.TokenType.FiniteNumber)
+                    semanticAnalyzerError(currentNode.getValue(), currentNode.getLine(), 5);
             }
             currentNode = currentNode.nextNode();
         }
@@ -240,6 +245,7 @@ public class SemanticAnalyzer {
         else if(mode == 2) tmp+= " expected natural number in array initialization\n";
         else if(mode == 3) tmp+= " value assigned does not match given type\n";
         else if(mode == 4) tmp+= " variable is not an array\n";
+        else if(mode == 5) tmp+= "  expected integer in array\n";
         System.out.println(tmp);
         valid = false;
     }

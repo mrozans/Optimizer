@@ -376,6 +376,7 @@ public class Parser {
             parseExpression();
         }
         else parseValue();
+        if(neg) currentNode = currentNode.getParentNode();
         if(bufferedToken == null) bufferedToken = lexer.nextToken();
         if(bufferedToken.getType().equals(ClosedBrace) && !(braceCount == 0 && inForBrace)){
             currentNode = currentNode.getParentNode();

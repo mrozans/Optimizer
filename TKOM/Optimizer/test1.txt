@@ -2,7 +2,7 @@ int main()
 {
     int a =5;
     int b = 3;
-    int c = 9;
+    int gen0 = 9;
     for (int i=1; i<10; i = i + 1)
     {
         b = 2 * a - 7/9;

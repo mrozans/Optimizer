@@ -93,7 +93,6 @@ public class Optimizer {
             optimizeElements(calculation, currentNode);
             optimizeFactors(calculation, currentNode);
         }
-
     }
 
     private int countLogicOperators(Node currentNode){
@@ -215,8 +214,11 @@ public class Optimizer {
         tmp.setParentNode(currentNode);
         tmp2.setParentNode(currentNode);
         int k = 0;
-        if(last != null) for(;k < currentNode.getChildNodes().size(); k++){
-            if(currentNode.getChildNodes().get(k) == last) break;
+        if(last != null) {
+            for(;k < currentNode.getChildNodes().size(); k++){
+                if(currentNode.getChildNodes().get(k) == last) break;
+            }
+            if(mode == 0) k--;
         }
         else k = id-1;
         currentNode.getChildNodes().add(k + 1, tmp);
@@ -227,8 +229,9 @@ public class Optimizer {
     private void fixSigns(){
         Node currentNode = syntaxTree.getRoot();
         while (currentNode != null){
-            if(currentNode.getTokenType() != null && (currentNode.getTokenType() == Token.TokenType.Plus
-                    || currentNode.getTokenType() == Token.TokenType.Minus) && currentNode.getChildNodes().size() == 0){
+            if(currentNode.getTokenType() != null && (((currentNode.getTokenType() == Token.TokenType.Plus
+                    || currentNode.getTokenType() == Token.TokenType.Minus) && currentNode.getChildNodes().size() == 0) ||
+                    isLogicOperator(currentNode.getTokenType()))){
                 Node tmp = currentNode.nextNode();
                 Node parent = tmp.getParentNode();
                 int i = 0;
@@ -398,18 +401,22 @@ public class Optimizer {
                             case "double":
                                 return Token.TokenType.Double;
                             case "int":
-                                result = Token.TokenType.Int;
+                                if(result != Token.TokenType.Long && result != Token.TokenType.Float) result = Token.TokenType.Int;
                                 break;
                             case "float":
                                 result = Token.TokenType.Float;
                                 break;
                             case "short":
-                                result = Token.TokenType.Short;
+                                if(result != Token.TokenType.Long && result != Token.TokenType.Float && result != Token.TokenType.Int)
+                                    result = Token.TokenType.Short;
+                                break;
+                            case "long":
+                                if(result != Token.TokenType.Float) result = Token.TokenType.Long;
                                 break;
                         }
                         break;
                     case Number:
-                        result = Token.TokenType.Int;
+                        if(result != Token.TokenType.Long && result != Token.TokenType.Float) result = Token.TokenType.Int;
                         break;
                     case FiniteNumber:
                         return Token.TokenType.Double;

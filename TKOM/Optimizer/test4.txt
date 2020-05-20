@@ -1,0 +1,16 @@
+int main()
+{
+    int i, j, a=5, b[100], c[100];
+    for (i=1; i<100; i= i + 1)
+    {
+        for (j=1; j<100; j = j + 1)
+        {
+        int f = 4;
+            if(a + 1> 25*6/f)
+            {
+                continue;
+            }
+        }
+    }
+    return 0;
+}
