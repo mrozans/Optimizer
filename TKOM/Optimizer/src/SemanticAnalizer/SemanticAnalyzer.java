@@ -220,21 +220,29 @@ public class SemanticAnalyzer {
     private void checkArrayVariable(){
         Node currentNode = syntaxTree.getRoot();
         while (currentNode != null) {
-            if(currentNode.getTokenType() != null && currentNode.getTokenType().equals(Token.TokenType.Identifier)
-                    && currentNode.getChildNodes().size() != 0) {
-                for (ArrayList<VariableInfo> tmp : variables) {
-                    for (VariableInfo variableInfo : tmp) {
-                        if(variableInfo.getVariable().equals(currentNode.getValue()) && !variableInfo.isArray()){
-                            semanticAnalyzerError(currentNode.getValue(), currentNode.getLine(), 4);
-                            return;
-                        }
-                    }
+            if(currentNode.getTokenType() != null && currentNode.getTokenType().equals(Token.TokenType.Identifier))
+            {
+                if(currentNode.getChildNodes().size() != 0) {
+                    lookFor(0, currentNode);
+                    if(currentNode.getChildNodes().get(0).getChildNodes().get(0).getTokenType() != null &&
+                            currentNode.getChildNodes().get(0).getChildNodes().get(0).getTokenType() == Token.TokenType.FiniteNumber)
+                        semanticAnalyzerError(currentNode.getValue(), currentNode.getLine(), 5);
                 }
-                if(currentNode.getChildNodes().get(0).getChildNodes().get(0).getTokenType() != null &&
-                        currentNode.getChildNodes().get(0).getChildNodes().get(0).getTokenType() == Token.TokenType.FiniteNumber)
-                    semanticAnalyzerError(currentNode.getValue(), currentNode.getLine(), 5);
+                else lookFor(1, currentNode);
             }
             currentNode = currentNode.nextNode();
+        }
+    }
+
+    private void lookFor(int mode, Node currentNode){
+        for (ArrayList<VariableInfo> tmp : variables) {
+            for (VariableInfo variableInfo : tmp) {
+                if(variableInfo.getVariable().equals(currentNode.getValue())){
+                    if(mode == 0 && !variableInfo.isArray()) semanticAnalyzerError(currentNode.getValue(), currentNode.getLine(), 4);
+                    else if(mode == 1 && variableInfo.isArray()) semanticAnalyzerError(currentNode.getValue(), currentNode.getLine(), 6);
+                    return;
+                }
+            }
         }
     }
 
@@ -245,7 +253,8 @@ public class SemanticAnalyzer {
         else if(mode == 2) tmp+= " expected natural number in array initialization\n";
         else if(mode == 3) tmp+= " value assigned does not match given type\n";
         else if(mode == 4) tmp+= " variable is not an array\n";
-        else if(mode == 5) tmp+= "  expected integer in array\n";
+        else if(mode == 5) tmp+= " expected integer in array\n";
+        else if(mode == 6) tmp+= " variable is an array, index required\n";
         System.out.println(tmp);
         valid = false;
     }
