@@ -22,11 +22,12 @@ public class SemanticAnalyzer {
         markNodes();
         variables = new ArrayList[iterator+1];
         for(int i = 0; i <= iterator; i++){
-            variables[i] = new ArrayList<Pair>();
+            variables[i] = new ArrayList<VariableInfo>();
         }
         checkInitialization();
         checkUsage();
         checkAssignment();
+        checkArrayVariable();
     }
 
     private void markNodes(){
@@ -34,7 +35,8 @@ public class SemanticAnalyzer {
         ArrayList<Integer> blockNumbers = new ArrayList<>();
         blockNumbers.add(0);
         while (nodeIterator.getCurrentNode() != null){
-            if(nodeIterator.getCurrentNode().getType() != null && nodeIterator.getCurrentNode().getType().equals("block")){
+            if((nodeIterator.getCurrentNode().getTokenType() != null && nodeIterator.getCurrentNode().getTokenType() == Token.TokenType.For)
+                    || NotForBlock(nodeIterator)){
                 if(nodeIterator.notVisited()){
                     iterator++;
                     blockNumbers.add(iterator);
@@ -48,13 +50,23 @@ public class SemanticAnalyzer {
         }
     }
 
+    private boolean NotForBlock(NodeIterator nodeIterator){
+        return (nodeIterator.getCurrentNode().getType() != null && nodeIterator.getCurrentNode().getType().equals("block") &&
+                !(nodeIterator.getCurrentNode().getParentNode().getTokenType() != null
+                && nodeIterator.getCurrentNode().getParentNode().getTokenType() == Token.TokenType.For));
+    }
+
     private void checkInitialization(){
         Node currentNode = syntaxTree.getRoot();
         while (currentNode != null){
             if(currentNode.getType() != null && currentNode.getType().equals("variable initialization")){
                 currentNode = currentNode.nextNode();
                 boolean error = present(currentNode, 0);
-                if(!error) variables[currentNode.getBlocks().get(currentNode.getBlocks().size()-1)].add(new Pair(currentNode.getValue()));
+                if(!error) {
+                    if(currentNode.getChildNodes().size() == 0)
+                    variables[currentNode.getBlocks().get(currentNode.getBlocks().size()-1)].add(new VariableInfo(currentNode.getValue(), false));
+                    else variables[currentNode.getBlocks().get(currentNode.getBlocks().size()-1)].add(new VariableInfo(currentNode.getValue(), true));
+                }
                 else semanticAnalyzerError(currentNode.getValue(), currentNode.getLine(), 0);
             }
             currentNode = currentNode.nextNode();
@@ -65,14 +77,14 @@ public class SemanticAnalyzer {
         Node currentNode = syntaxTree.getRoot();
         while (currentNode != null) {
             if(currentNode.getTokenType() != null && currentNode.getTokenType().equals(Token.TokenType.Identifier)){
-                if(!currentNode.getParentNode().getType().equals("variable initialization")){
+                if(!(currentNode.getParentNode().getType() != null && currentNode.getParentNode().getType().equals("variable initialization"))){
                     boolean initialized = present(currentNode, 1);
                     if(!initialized) semanticAnalyzerError(currentNode.getValue(), currentNode.getLine(), 1);
                 }
                 else{
-                    ArrayList<Pair> tmp = variables[currentNode.getBlocks().get(currentNode.getBlocks().size() - 1)];
-                    for (Pair pair : tmp) {
-                        if(pair.getVariable().equals(currentNode.getValue())) pair.setInitialized();
+                    ArrayList<VariableInfo> tmp = variables[currentNode.getBlocks().get(currentNode.getBlocks().size() - 1)];
+                    for (VariableInfo variableInfo : tmp) {
+                        if(variableInfo.getVariable().equals(currentNode.getValue())) variableInfo.setInitialized();
                     }
                 }
             }
@@ -95,7 +107,7 @@ public class SemanticAnalyzer {
         boolean present = false;
         for (Integer block : blocks) {
             for(int i =0; i < variables[block].size(); i++) {
-                Pair tmp = (Pair) variables[block].get(i);
+                VariableInfo tmp = (VariableInfo) variables[block].get(i);
                 if (tmp.getVariable().equals(name)) {
                     if(mode == 0 || (mode == 1 && tmp.isInitialized())){
                             present = true;
@@ -205,13 +217,34 @@ public class SemanticAnalyzer {
         return false;
     }
 
+    private void checkArrayVariable(){
+        Node currentNode = syntaxTree.getRoot();
+        while (currentNode != null) {
+            if(currentNode.getTokenType() != null && currentNode.getTokenType().equals(Token.TokenType.Identifier)
+                    && currentNode.getChildNodes().size() != 0) {
+                for (ArrayList<VariableInfo> tmp : variables) {
+                    for (VariableInfo variableInfo : tmp) {
+                        if(variableInfo.getVariable().equals(currentNode.getValue()) && !variableInfo.isArray())
+                            semanticAnalyzerError(currentNode.getValue(), currentNode.getLine(), 4);
+                    }
+                }
+            }
+            currentNode = currentNode.nextNode();
+        }
+    }
+
     private void semanticAnalyzerError(String variable, int line, int mode){
         String tmp = "Error line: " + line + " Variable: " + variable;
         if(mode == 0) tmp+= " initialized more than once\n";
         else if(mode == 1) tmp+= " used without initialization\n";
         else if(mode == 2) tmp+= " expected natural number in array initialization\n";
         else if(mode == 3) tmp+= " value assigned does not match given type\n";
+        else if(mode == 4) tmp+= " variable is not an array\n";
         System.out.println(tmp);
         valid = false;
+    }
+
+    public boolean isValid() {
+        return valid;
     }
 }

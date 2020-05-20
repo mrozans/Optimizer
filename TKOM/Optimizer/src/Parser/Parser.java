@@ -3,6 +3,8 @@ package Parser;
 import Lexer.Lexer;
 import Lexer.Token;
 
+import java.util.ArrayList;
+
 import static Lexer.Token.TokenType.*;
 
 public class Parser {
@@ -19,6 +21,9 @@ public class Parser {
     private boolean minusLast;
     private boolean plusLast;
     private boolean lastArray;
+    private boolean comeBack;
+    private ArrayList<Boolean> signBrace;
+    private ArrayList<Boolean> negationBrace;
 
     public Parser(Lexer lexer) {
         this.lexer = lexer;
@@ -33,6 +38,9 @@ public class Parser {
         minusLast = false;
         plusLast = false;
         lastArray = false;
+        comeBack = true;
+        signBrace = new ArrayList<>();
+        negationBrace = new ArrayList<>();
     }
 
     public SyntaxTree parseProgram(){
@@ -269,12 +277,13 @@ public class Parser {
     }
 
     private void parseExpression(){
+        comeBack = false;
         new Node(currentNode, "expression");
         Node parent = currentNode;
         currentNode = currentNode.newestNode();
         if(bufferedToken == null) bufferedToken = lexer.nextToken();
         parseExpressionValue();
-        currentNode = parent.newestNode();
+        if(!comeBack) currentNode = parent.newestNode();
         boolean end = false;
         if(bufferedToken == null) bufferedToken = lexer.nextToken();
         while(syntaxTree.isValid() && !(inIf && braceCount == 0) && !(inForBrace && braceCount == -1)
@@ -290,7 +299,6 @@ public class Parser {
                     break;
                 case Multiply:
                 case Divide:
-                case Modulo:
                 case Or:
                 case And:
                 case Less:
@@ -317,12 +325,13 @@ public class Parser {
             parseExpressionValue();
             if(bufferedToken == null) bufferedToken = lexer.nextToken();
         }
-        currentNode = parent;
+        if(!(signBrace.size() > 0 && (signBrace.get(signBrace.size() - 1) || negationBrace.get(negationBrace.size() - 1)))) currentNode = parent;
         if(bufferedToken == null) bufferedToken = lexer.nextToken();
         if(braceCount < 0 && !(inForBrace && braceCount == -1)) parserError(bufferedToken, null, null, 3);
         if(bufferedToken != null && !inForBrace && bufferedToken.getType() == ClosedBrace)  {
             currentNode = currentNode.getParentNode();
             addToTree(bufferedToken);
+            checkBrace();
             braceCount--;
         }
     }
@@ -346,6 +355,7 @@ public class Parser {
     }
 
     private void parseExpressionValue() {
+        boolean neg = false;
         if(bufferedToken == null) bufferedToken = lexer.nextToken();
         if(bufferedToken.getType().equals(Negation)){
             plusLast = false;
@@ -353,8 +363,12 @@ public class Parser {
             addToTree(bufferedToken);
             currentNode = currentNode.newestNode();
             bufferedToken = lexer.nextToken();
+            neg = true;
         }
         if(bufferedToken.getType().equals(OpenBrace)){
+            if(neg) negationBrace.add(true);
+            else negationBrace.add(false);
+            signBrace.add(false);
             plusLast = false;
             minusLast = false;
             braceCount++;
@@ -367,6 +381,8 @@ public class Parser {
             currentNode = currentNode.getParentNode();
             braceCount--;
             addToTree(bufferedToken);
+            checkBrace();
+            comeBack = true;
         }
     }
 
@@ -399,8 +415,11 @@ public class Parser {
             currentNode = currentNode.newestNode();
             bufferedToken = lexer.nextToken();
             if(bufferedToken.getType().equals(OpenBrace)){
+                signBrace.add(true);
+                negationBrace.add(false);
+                addToTree(bufferedToken);
+                braceCount++;
                 parseExpression();
-                if(bufferedToken.getType().equals(OpenBrace)) accept(bufferedToken, ClosedBrace);
                 return;
             }
         }
@@ -449,6 +468,13 @@ public class Parser {
                 new Node(currentNode, nextToken);
                 break;
         }
+    }
+
+    private void checkBrace(){
+        if(signBrace.size() <= 0) return;
+        if(signBrace.get(signBrace.size() - 1) || negationBrace.get(negationBrace.size() - 1)) currentNode = currentNode.getParentNode();
+        negationBrace.remove(negationBrace.size()-1);
+        signBrace.remove(signBrace.size() - 1);
     }
 
     private void accept(Token nextToken, Token.TokenType expectedToken) {
