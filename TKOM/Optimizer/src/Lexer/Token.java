@@ -7,6 +7,9 @@ public class Token {
     private int position;
     private String value;
 
+    public Token() {
+    }
+
     Token(int line, int position) {
         this.line = line + 1;
         this.position = position;

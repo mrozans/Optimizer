@@ -8,6 +8,9 @@ public class Lexer {
 
     private FileHandler fileHandler;
 
+    public Lexer() {
+    }
+
     public Lexer(Path path) throws IOException {
         new Symbols();
         fileHandler = new FileHandler(path);
