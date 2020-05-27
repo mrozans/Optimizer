@@ -44,13 +44,13 @@ public class Optimizer {
             }
             currentNode.setForBlocks((ArrayList<Integer>) forList.clone());
             if(currentNode.getTokenType() != null && currentNode.getTokenType() == Token.TokenType.Identifier){
-                updateValueInfos(currentNode);
+                updateValueInfos(currentNode, forList);
             }
             currentNode = currentNode.nextNode();
         }
     }
 
-    private void updateValueInfos(Node currentNode){
+    private void updateValueInfos(Node currentNode, ArrayList<Integer> forList){
         int currentLoop = -1;
         if(currentNode.getForBlocks().size() != 0) currentLoop = currentNode.getForBlocks().get(currentNode.getForBlocks().size() - 1);
         if(currentNode.getParentNode().getType() != null && currentNode.getParentNode().getType().equals("variable initialization")){
@@ -58,7 +58,7 @@ public class Optimizer {
             valueInfos.put(currentNode.getValue(), new ValueInfo(type, currentLoop));
         }
         if(currentNode.getParentNode().getType() != null && currentNode.getParentNode().getType().equals("assign") && currentLoop != -1){
-            valueInfos.get(currentNode.getValue()).addToList(currentLoop);
+            valueInfos.get(currentNode.getValue()).addToList(forList);
         }
     }
 
@@ -88,7 +88,7 @@ public class Optimizer {
         ArrayList<Node>[] calculations = new ArrayList[numberOfCalculations];
         for(int i = 0; i < calculations.length; i++) calculations[i] = new ArrayList<>();
         factorize(currentNode, calculations);
-        for (ArrayList calculation : calculations) {
+        for (ArrayList<Node> calculation : calculations) {
             markElements(calculation);
             optimizeElements(calculation, currentNode);
             optimizeFactors(calculation, currentNode);

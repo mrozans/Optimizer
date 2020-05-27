@@ -1,0 +1,11 @@
+int main()
+{
+    int a =5;
+    int b = 3;
+    int c = 9;
+    for (int i=1; i<10; i = i + 1)
+    {
+        a = -(b*c);
+    }
+    return 0;
+}

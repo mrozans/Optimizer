@@ -1,0 +1,15 @@
+int main()
+{
+	int a = 5;
+	int b = 3;
+	int gen0 = 9;
+	int c = 2;
+	int gen1 = 2 * a - 7 / 9;
+	int gen2 = (7);
+	for(int i = 1;i < 10; i = i + 1)
+	{
+		b =  + gen1;
+		c = 7 + 1 / b * gen2;
+	}
+	return 0;
+}

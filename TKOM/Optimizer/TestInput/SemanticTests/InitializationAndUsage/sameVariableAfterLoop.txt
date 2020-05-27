@@ -1,0 +1,13 @@
+int main()
+{
+    int i, j, a=5;
+    for (i=1; i<100; i= i + 1)
+    {
+        for (j=1; j<100; j = j + 1)
+        {
+            int f = 4;
+        }
+        int f = 4;
+    }
+    return 0;
+}

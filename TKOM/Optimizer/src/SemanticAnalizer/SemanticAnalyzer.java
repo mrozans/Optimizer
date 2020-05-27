@@ -225,7 +225,9 @@ public class SemanticAnalyzer {
                 if(currentNode.getChildNodes().size() != 0) {
                     lookFor(0, currentNode);
                     if(currentNode.getChildNodes().get(0).getChildNodes().get(0).getTokenType() != null &&
-                            currentNode.getChildNodes().get(0).getChildNodes().get(0).getTokenType() == Token.TokenType.FiniteNumber)
+                            currentNode.getChildNodes().get(0).getChildNodes().get(0).getTokenType() == Token.TokenType.FiniteNumber &&
+                            currentNode.getParentNode().getType() != null &&
+                            !currentNode.getParentNode().getType().equals("variable initialization"))
                         semanticAnalyzerError(currentNode.getValue(), currentNode.getLine(), 5);
                 }
                 else lookFor(1, currentNode);

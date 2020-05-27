@@ -1,0 +1,12 @@
+int main()
+{
+    int i;
+    short a = 3;
+    long c = 10000000000;
+    int b[100];
+    for (i=1; i<100; i=i + 1)
+    {
+        b[i] = a + c;
+    }
+    return 0;
+}

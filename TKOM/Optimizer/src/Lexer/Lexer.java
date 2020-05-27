@@ -7,13 +7,14 @@ import java.nio.file.Path;
 public class Lexer {
 
     private FileHandler fileHandler;
-
+    private boolean valid;
     public Lexer() {
     }
 
     public Lexer(Path path) throws IOException {
         new Symbols();
         fileHandler = new FileHandler(path);
+        valid = fileHandler.isValid();
     }
     public Token nextToken()
     {
@@ -109,5 +110,9 @@ public class Lexer {
             if(token.getType() == null) token.setType(Token.TokenType.Unknown);
         }
         return token;
+    }
+
+    public boolean isValid() {
+        return valid;
     }
 }

@@ -1,0 +1,6 @@
+int main()
+{
+    int i[3];
+    i[2.5] = 4;
+    return 0;
+}

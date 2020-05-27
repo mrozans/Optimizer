@@ -16,11 +16,17 @@ class ValueInfo {
         return assignList;
     }
 
-    void addToList(int loop){
-        for (Integer integer : assignList) {
-            if(integer == loop) return;
+    void addToList(ArrayList<Integer> forList){
+        for (Integer integer : forList) {
+            boolean exist = false;
+            for (Integer integer2 : assignList) {
+                if(integer == integer2) {
+                    exist = true;
+                    break;
+                }
+            }
+            if(!exist) assignList.add(integer);
         }
-        assignList.add(loop);
     }
 
     String getType() {

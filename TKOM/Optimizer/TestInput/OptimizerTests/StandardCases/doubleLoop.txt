@@ -1,0 +1,12 @@
+int main()
+{
+    int i, j, a=5, b[100], c[100];
+    for (i=1; i<100; i= i + 1)
+    {
+   	    for (j=1; j<100; j = j + 1)
+  	    {
+  	          b[i] = c[j] * a * 135.8;
+  	    }
+    }
+    return 0;
+}

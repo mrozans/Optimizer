@@ -11,7 +11,15 @@ import java.nio.file.Path;
 public class Main
 {
     public static void main(String[] args) throws IOException {
+        if(args.length == 0) {
+            System.out.println("\tNo file given\n");
+            return;
+        }
         Lexer lexer = new Lexer(Path.of(args[0]));
+        if(!lexer.isValid()) {
+            System.out.println("\tInvalid file\n");
+            return;
+        }
         Parser parser = new Parser(lexer);
         System.out.println("syntax analysis:\n");
         SyntaxTree syntaxTree = parser.parseProgram();

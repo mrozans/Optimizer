@@ -1,0 +1,12 @@
+int main()
+{
+	int i;
+	short a = 3,  c = 10;
+	int b[100];
+	short gen0 = a + c;
+	for(i = 1;i < 100; i = i + 1)
+	{
+		b[i] =  + gen0;
+	}
+	return 0;
+}

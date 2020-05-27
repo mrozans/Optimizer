@@ -11,9 +11,15 @@ public class FileHandler {
     private int lineNumberPeak;
     private int signPosPeak;
     private boolean end;
+    private boolean valid;
 
     public FileHandler(Path path) throws IOException {
+        if(!Files.isReadable(path)){
+            valid = false;
+            return;
+        }
         lines = Files.lines(path).toArray(String[]::new);
+        valid = lines.length != 0;
         lineNumber = 0;
         signPos = 0;
         end = false;
@@ -58,4 +64,9 @@ public class FileHandler {
     public int getSignPos() {
         return signPos;
     }
+
+    public boolean isValid() {
+        return valid;
+    }
 }
+
